@@ -37,7 +37,9 @@ class Main extends Component {
 
         return (
             <Switch>
+                <Route exact path="/"></Route>
                 <Route path="/:channelId" component={QueueComponentWithId}></Route>
+                <Redirect to="/"></Redirect>
             </Switch>
         )
     }
