@@ -17,10 +17,15 @@ class QueueComponent extends Component {
         }
     }
 
-    popQueue() {
+    popQueue(callback) {
+        // const promise = new Promise((resolve, reject) => {
+            
+        // })
         var url = baseUrl + 'queues/' + this.props.queueId + '/pop'
         fetch(url)
             .then(() => this.fetchQueue())
+            .then(() => console.log("done"))
+            .then(() => callback())
             .catch(errmess => console.log(errmess));
     }
 
@@ -43,6 +48,15 @@ class QueueComponent extends Component {
                     throw errormess
                 })
             .then(response => response.json())
+            .then(response => {
+                if(response==null){
+                    var error = new Error("This queue doesn't exist.");
+                    error.response = response;
+                    throw error;
+                }else{
+                    return response;
+                }
+            })
             .then(response => ResponseWithTime(response))
             .then(response => this.setState({ queueObj: response, isLoading: false, error: null }))
             .catch(error => {
@@ -68,8 +82,8 @@ class QueueComponent extends Component {
         return (
             <div className="container">
                 <div className="row justify-content-center mt-5">
-                    <div className="col-12 col-sm-9 col-md-6">
-                        <RenderQueue queueObj={this.state.queueObj} popQueue={() => this.popQueue()} isLoading={this.state.isLoading} error={this.state.error}></RenderQueue>
+                    <div className="col-12">
+                        <RenderQueue queueObj={this.state.queueObj} popQueue={(callback) => this.popQueue(callback)} isLoading={this.state.isLoading} error={this.state.error} fetchQueue={() => this.fetchQueue()}></RenderQueue>
                     </div>
                 </div>
             </div>
