@@ -25,11 +25,9 @@ class Main extends Component {
     render() {
         console.log("MainComponent Rendering");
         const QueueComponentWithId = ({ match }) => {
-            // this.props.fetchQueue(match.params.channelId);
             return (
                 <QueueComponent
-                    fetchQueue={(channelId) => this.props.fetchQueue(channelId)}
-                    channelId={match.params.channelId}
+                    queueId={match.params.queueId}
                     queue={this.props.queue}
                 />
             )
@@ -38,7 +36,7 @@ class Main extends Component {
         return (
             <Switch>
                 <Route exact path="/"></Route>
-                <Route path="/:channelId" component={QueueComponentWithId}></Route>
+                <Route path="/:queueId" component={QueueComponentWithId}></Route>
                 <Redirect to="/"></Redirect>
             </Switch>
         )

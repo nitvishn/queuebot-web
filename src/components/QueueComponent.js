@@ -1,16 +1,13 @@
+import { Button } from 'bootstrap';
 import React, { Component } from 'react'
 import { baseUrl } from '../shared/baseUrl';
 import { RenderQueue, ResponseWithTime } from './RenderQueue';
-
-const startCountingTime = () => {
-    // this.timer 
-}
 
 class QueueComponent extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            queue: [],
+            queueObj: [],
             isLoading: true,
             errmess: null,
         };
@@ -18,43 +15,48 @@ class QueueComponent extends Component {
             fetchTimer: null,
             countTimeTimer: null
         }
-        this.startCountingTime = startCountingTime.bind(this)
+    }
+
+    popQueue() {
+        var url = baseUrl + 'queues/' + this.props.queueId + '/pop'
+        fetch(url)
+            .then(() => this.fetchQueue())
+            .catch(errmess => console.log(errmess));
+    }
+
+    fetchQueue() {
+        console.log("Fetching.")
+        var url = baseUrl + 'queues/' + this.props.queueId
+        console.log(url);
+        return fetch(url)
+            .then(response => {
+                if (response.ok) {
+                    return response;
+                } else {
+                    var error = new Error('Error ' + response.status + ': ' + response.statusText);
+                    error.response = response;
+                    throw error;
+                }
+            },
+                error => {
+                    var errormess = new Error(error.message);
+                    throw errormess
+                })
+            .then(response => response.json())
+            .then(response => ResponseWithTime(response))
+            .then(response => this.setState({ queueObj: response, isLoading: false, error: null }))
+            .catch(error => {
+                console.log(error);
+                this.setState({ queueObj: [], isLoading: false, error: error});
+            })
     }
 
     componentDidMount() {
-        const fetchQueue = () => {
-            console.log("Fetching.")
-            var url = new URL(baseUrl)
-            var params = {
-                'channel': this.props.channelId
-            };
-            url.search = new URLSearchParams(params).toString();
-            return fetch(url)
-                .then(response => {
-                    if (response.ok) {
-                        return response;
-                    } else {
-                        var error = new Error('Error ' + response.status + ': ' + response.statusText);
-                        error.response = response;
-                        throw error;
-                    }
-                },
-                    error => {
-                        var errormess = new Error(error.message);
-                        throw errormess
-                    })
-                .then(response => response.json())
-                .then(response => ResponseWithTime(response))
-                .then(response => this.setState({ queue: response[0], isLoading: false, errmess: null }))
-                .then(() => startCountingTime())
-                .catch(errmess => this.setState({ queue: [], isLoading: false, errmess: errmess }))
-        }
-
         console.log("QueueComponent Mounting");
-        fetchQueue();
+        this.fetchQueue();
         this.timer.fetchTimer = setInterval(() => {
-            fetchQueue();
-        }, 10000);
+            this.fetchQueue();
+        }, 5000);
     }
 
     componentWillUnmount() {
@@ -62,12 +64,12 @@ class QueueComponent extends Component {
     }
 
     render() {
-        console.log(this.state.queue)
+        console.log(this.state.queueObj)
         return (
             <div className="container">
-                <div className="row justify-content-center">
+                <div className="row justify-content-center mt-5">
                     <div className="col-12 col-sm-9 col-md-6">
-                        <RenderQueue queue={this.state.queue} isLoading={this.state.isLoading} errmess={this.state.errmess}></RenderQueue>
+                        <RenderQueue queueObj={this.state.queueObj} popQueue={() => this.popQueue()} isLoading={this.state.isLoading} error={this.state.error}></RenderQueue>
                     </div>
                 </div>
             </div>

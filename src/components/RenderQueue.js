@@ -2,14 +2,13 @@ import React from 'react'
 import { Table } from 'reactstrap';
 import moment from 'moment';
 
-export const ResponseWithTime = (response) => {
-    console.log(response)
-    if(response){
-        var queueObj = response[0].queue
+export const ResponseWithTime = (queueObj) => {
+    if (queueObj) {
+        console.log(queueObj);
         var totalTime = 0;
         var totalQuestions = 0;
         var ETA_cumulative = 0;
-        for(let i = 0; i < queueObj.queue.length; i++){
+        for (let i = 0; i < queueObj.queue.length; i++) {
             var item = queueObj.queue[i];
             if (item.popped === 2) {
                 var timeDiff = item.poppedTime2 - item.poppedTime1;
@@ -33,7 +32,7 @@ export const ResponseWithTime = (response) => {
             }
         }
     }
-    return response;
+    return queueObj;
 }
 
 export const RenderQueue = (props) => {
@@ -52,18 +51,18 @@ export const RenderQueue = (props) => {
                 Loading...
             </div>
         )
-    } else if (props.errmess) {
+    } else if (props.error) {
         return (
             <div>
-                <h1>Error Encountered</h1>
-                {props.errmess}
+                <h1>There's been an error.</h1>
+                <p>{props.error.message}</p>
             </div>
         )
     }
     // else{
     //     return (<div></div>)
     // }
-    var queueObj = props.queue.queue
+    var queueObj = props.queueObj;
     var counter = 0;
     var alreadyFinished = [];
     var current = [];
@@ -74,7 +73,7 @@ export const RenderQueue = (props) => {
             alreadyFinished.push((
                 <tr key={counter} className="answered-row">
                     <th>{counter}</th>
-                    <td>{item.userDisplayName}</td>
+                    <td>{item.name}</td>
                     <td>{item.numQuestions}</td>
                     <td>{item.comments}</td>
                     <td className="timeCell">Answered in {formatTime(item.answeredIn)}</td>
@@ -84,7 +83,7 @@ export const RenderQueue = (props) => {
             current.push((
                 <tr key={counter} className="current-row">
                     <th>{counter}</th>
-                    <td>{item.userDisplayName}</td>
+                    <td>{item.name}</td>
                     <td>{item.numQuestions}</td>
                     <td>{item.comments}</td>
                     <td className="timeCell">Began {formatTime(item.began)} ago</td>
@@ -94,7 +93,7 @@ export const RenderQueue = (props) => {
             queued.push((
                 <tr key={counter} className="queued-row">
                     <th>{counter}</th>
-                    <td>{item.userDisplayName}</td>
+                    <td>{item.name}</td>
                     <td>{item.numQuestions}</td>
                     <td>{item.comments}</td>
                     <td className="timeCell">{formatTime(item.ETA)}</td>
@@ -105,6 +104,9 @@ export const RenderQueue = (props) => {
     return (
         <div>
             <h1 className="text-center">{queueObj.title}</h1>
+            <div className="row">
+                <button type="button" class="btn btn-primary" onClick={props.popQueue}>Pop Queue</button>
+            </div>
             <Table>
                 <thead>
                     <tr>
@@ -120,7 +122,7 @@ export const RenderQueue = (props) => {
                 </tbody>
                 <thead>
                     <tr>
-                        <th colspan="5">Currently Answering</th>
+                        <th colSpan="5">Currently Answering</th>
                         {/* <th>Began </th> */}
                     </tr>
                 </thead>
@@ -130,7 +132,7 @@ export const RenderQueue = (props) => {
 
                 <thead>
                     <tr>
-                        <th colspan="5">Finished Answering</th>
+                        <th colSpan="5">Finished Answering</th>
                         {/* <th>Answered In</th> */}
                     </tr>
                 </thead>
